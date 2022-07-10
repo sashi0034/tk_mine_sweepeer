@@ -28,7 +28,6 @@ class MineElement:
         if foreground != None: self.__button.configure(foreground=foreground)
         if background != None: self.__button.configure(background=background)
 
-
     def embed_bomb(self):
         if self.__has_bomb:
             raise RuntimeError("Bomb Already Exist.")

@@ -9,7 +9,7 @@ from vec import Vec
 
 class MineMat:
     def __init__(self, field_frame: tk.Frame, window: tk.Tk, field_size: Size, num_bomb, game_state: GameState) -> None:
-        self.__mat: [MineMat] = []
+        self.__mat: [MineElement] = []
         self.__mat_size: Size = field_size
         self.__frame = field_frame
         self.__game_state = game_state
@@ -52,14 +52,25 @@ class MineMat:
 
         clicked_elem = self.__get_elem(pos=pos)
         if clicked_elem.is_opened(): return
-        clicked_elem.make_open()
+        self.__make_open(clicked_elem)
+        self.__game_state.increase_score()
 
         if not clicked_elem.has_bomb():
             self.__open_around_elem(pos)
+            self.__check_completed()
         else:
             clicked_elem.change_style(text="💣", foreground="#46f", background="#bbf")
             self.__game_state.change_state(EGameState.GAME_OVER)
             self.__anim_explode_async()
+
+    def __make_open(self, clicked_elem):
+        clicked_elem.make_open()
+        self.__game_state.increase_score()
+
+    def __check_completed(self):
+        for elem in self.__mat:
+            if not elem.is_opened(): return
+        self.__game_state.change_state(EGameState.COMPLETED)
 
     def __open_around_elem(self, pos):
         for x in range(pos.get_x() - 1, pos.get_x() + 1 + 1):
@@ -67,7 +78,7 @@ class MineMat:
                 if not self.__is_in_range(x, y): continue
 
                 elem = self.__get_elem(x, y)
-                elem.make_open()
+                self.__make_open(elem)
 
                 if elem.has_bomb():
                     elem.change_style(text="💣", foreground="#46f", background="#bbf")
