@@ -23,8 +23,11 @@ class MineElement:
     def get_pos(self):
         return self.__pos
 
-    def change_style(self, text: str):
-        self.__button.configure(text=text)
+    def change_style(self, text: str = None, foreground: str = None, background: str = None):
+        if text != None: self.__button.configure(text=text)
+        if foreground != None: self.__button.configure(foreground=foreground)
+        if background != None: self.__button.configure(background=background)
+
 
     def embed_bomb(self):
         if self.__has_bomb:

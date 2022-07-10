@@ -57,7 +57,7 @@ class MineMat:
         if not clicked_elem.has_bomb():
             self.__open_around_elem(pos)
         else:
-            clicked_elem.change_style(text="💣")
+            clicked_elem.change_style(text="💣", foreground="#46f", background="#bbf")
             self.__game_state.change_state(EGameState.GAME_OVER)
             self.__anim_explode_async()
 
@@ -70,14 +70,25 @@ class MineMat:
                 elem.make_open()
 
                 if elem.has_bomb():
-                    elem.change_style(text="💣")
+                    elem.change_style(text="💣", foreground="#46f", background="#bbf")
                 else:
-                    elem.change_style(text=str(self.__calc_around_bomb(Vec(x, y))))
+                    text_number = self.__calc_around_bomb(Vec(x, y))
+                    foreground = "#888"
+                    if text_number == 1: foreground = "#666"
+                    if text_number == 2: foreground = "#444"
+                    if text_number == 3: foreground = "#222"
+                    if text_number >= 4: foreground = "#000"
+                    elem.change_style(text=str(text_number), foreground=foreground)
 
     def __anim_explode_async(self, curr_x=0):
         if curr_x == self.__mat_size.get_w(): return
         for y in range(0, self.__mat_size.get_h()):
-            self.__get_elem(curr_x, y).change_style(text="#")
+            background = "#f94"
+            foreground = "#f66"
+            if (curr_x + y) % 2 == 0:
+                foreground = "#fe0"
+                background = "#f64"
+            self.__get_elem(curr_x, y).change_style(text="🔥", foreground=foreground, background=background)
         self.__window.after(50, lambda: self.__anim_explode_async(curr_x + 1))
 
     def __calc_around_bomb(self, pos):
