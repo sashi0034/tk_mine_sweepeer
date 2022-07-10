@@ -1,5 +1,7 @@
 import tkinter as tk
 from turtle import Vec2D
+
+from game_state import GameState
 from mine_mat import MineMat
 
 from size import Size
@@ -14,6 +16,7 @@ if __name__ == "__main__":
 
     field_size: Size = Size(20, 10)
 
-    mine = MineMat(field_frame, field_size, 20)
+    game_state = GameState()
+    mine = MineMat(field_frame, window, field_size, 20, game_state)
 
     window.mainloop()

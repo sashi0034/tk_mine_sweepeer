@@ -1,16 +1,19 @@
 import random
 import tkinter as tk
 
+from game_state import GameState, EGameState
 from mine_element import MineElement
 from size import Size
 from vec import Vec
 
 
 class MineMat:
-    def __init__(self, field_frame: tk.Frame, field_size: Size, num_bomb) -> None:
+    def __init__(self, field_frame: tk.Frame, window: tk.Tk, field_size: Size, num_bomb, game_state: GameState) -> None:
         self.__mat: [MineMat] = []
         self.__mat_size: Size = field_size
         self.__frame = field_frame
+        self.__game_state = game_state
+        self.__window = window
 
         for y in range(0, field_size.get_h()):
             for x in range(0, field_size.get_w()):
@@ -45,22 +48,37 @@ class MineMat:
         return 0 <= x < self.__mat_size.get_w() and 0 <= y < self.__mat_size.get_h()
 
     def __on_click_elem(self, pos):
+        if self.__game_state.get_state() != EGameState.PLAYING: return
+
         clicked_elem = self.__get_elem(pos=pos)
         if clicked_elem.is_opened(): return
         clicked_elem.make_open()
 
         if not clicked_elem.has_bomb():
-            for x in range(pos.get_x() - 1, pos.get_x() + 1 + 1):
-                for y in range(pos.get_y() - 1, pos.get_y() + 1 + 1):
-                    if not self.__is_in_range(x, y): continue
+            self.__open_around_elem(pos)
+        else:
+            clicked_elem.change_style(text="💣")
+            self.__game_state.change_state(EGameState.GAME_OVER)
+            self.__anim_explode_async()
 
-                    elem = self.__get_elem(x, y)
-                    elem.make_open()
+    def __open_around_elem(self, pos):
+        for x in range(pos.get_x() - 1, pos.get_x() + 1 + 1):
+            for y in range(pos.get_y() - 1, pos.get_y() + 1 + 1):
+                if not self.__is_in_range(x, y): continue
 
-                    if (elem.has_bomb()):
-                        elem.change_style(text="💣")
-                    else:
-                        elem.change_style(text=str(self.__calc_around_bomb(Vec(x, y))))
+                elem = self.__get_elem(x, y)
+                elem.make_open()
+
+                if elem.has_bomb():
+                    elem.change_style(text="💣")
+                else:
+                    elem.change_style(text=str(self.__calc_around_bomb(Vec(x, y))))
+
+    def __anim_explode_async(self, curr_x=0):
+        if curr_x == self.__mat_size.get_w(): return
+        for y in range(0, self.__mat_size.get_h()):
+            self.__get_elem(curr_x, y).change_style(text="#")
+        self.__window.after(50, lambda: self.__anim_explode_async(curr_x + 1))
 
     def __calc_around_bomb(self, pos):
         count = 0
